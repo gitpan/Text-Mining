@@ -19,6 +19,7 @@ lib/Text/Mining/Concepts/Base.pm
 lib/Text/Mining/Languages/Base.pm
 lib/Text/Mining/Languages/Dictionary.pm
 lib/Text/Mining/Languages/Translator.pm
+lib/Text/Mining/Library.pm
 lib/Text/Mining/Parser/Text.pm
 lib/Text/Mining/Parser/Base.pm
 lib/Text/Mining/Parser.pm
@@ -38,8 +39,12 @@ lib/Text/Mining/Corpus/Document.pm
 lib/Text/Mining/Corpus/Base.pm
 lib/Text/Mining/Concepts.pm
 lib/Text/Mining/Algorithm.pm
+lib/Text/Mining/Shell.pm
 t/00.load.t
 t/50.base.t
-t/51.corpus.t
-t/52.document.t
+t/51.tmlibrary.t
+t/53.corpus.t
+t/54.document.t
+
+
 t/pod.t

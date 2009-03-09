@@ -7,11 +7,12 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.4');
+use version; our $VERSION = qv('0.0.5');
 
 {
 	my %id_of                    : ATTR( :default<> );
 	my %corpus_id_of             : ATTR( :init_arg<'corpus_id'> :default<> );
+	my %corpus_name_of           : ATTR( :default<> );
 	my %submitted_by_user_id_of  : ATTR( :init_arg<'submitted_by_user_id'> :default<> );
 	my %document_url_of          : ATTR( :init_arg<'document_url'> :default<> );
 	my %document_path_of         : ATTR( :init_arg<'document_path'> :default<> );
@@ -31,6 +32,7 @@ use version; our $VERSION = qv('0.0.4');
 
 	sub get_id                    { my ($self)  = @_; return $id_of{ident $self}; }
 	sub get_document_id           { my ($self)  = @_; return $id_of{ident $self}; }
+	sub get_submitted_document_id { my ($self)  = @_; return $id_of{ident $self}; }
 	sub get_corpus_id             { my ($self)  = @_; return $corpus_id_of{ident $self}; }
 	sub get_submitted_by_user_id  { my ($self)  = @_; return $submitted_by_user_id_of{ident $self}; }
 	sub get_document_url          { my ($self)  = @_; return $document_url_of{ident $self}; }
@@ -124,15 +126,10 @@ use version; our $VERSION = qv('0.0.4');
 	}
 
 	sub delete {
-		my ($self, $arg_ref)  = @_; 
+		my ( $self )  = @_; 
 		my $ident             = ident $self;
-		($id_of{$ident}, 
-	   	 $corpus_id_of{$ident}, 
-	   	 $document_path_of{$ident}, 
-	   	 $document_file_name_of{$ident}, 
-	   	 $bytes_of{$ident}, 
-	   	 $enter_date_of{$ident}) = $self->library()->
-		$self->library()->sqlexec("delete from documents where document_id = '$arg_ref->{document_id}'");
+
+		$self->library()->sqlexec("delete from documents where document_id = '" . $self->get_document_id() . "'");
 	}
 }
 
@@ -146,7 +143,7 @@ Text::Mining::Corpus::Document - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Corpus::Document version 0.0.4
+This document describes Text::Mining::Corpus::Document version 0.0.5
 
 
 =head1 SYNOPSIS

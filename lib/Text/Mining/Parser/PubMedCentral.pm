@@ -1,4 +1,4 @@
-package Text::Mining::Concepts;
+package Text::Mining::Parser::PubMedCentral;
 use base qw(Text::Mining::Base);
 use Class::Std;
 use Class::Std::Utils;
@@ -7,12 +7,52 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.5');
+use version; our $VERSION = qv('0.0.4');
 
 {
-	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
+	my %document_path_of          : ATTR( get => 'attribute', set => 'attribute' );
+	my %document_id_of 	      : ATTR( get => 'attribute', set => 'attribute' );
+	my %section_id_of 	      : ATTR( get => 'attribute', set => 'attribute' );
+	my %paragraph_id_of 	      : ATTR( get => 'attribute', set => 'attribute' );
+	my %sentence_id_of            : ATTR( get => 'attribute', set => 'attribute' );
+	my %document_token_id_of      : ATTR( get => 'attribute', set => 'attribute' );
 	
+        sub BUILD {
+                my ($self, $ident, $arg_ref) = @_;
+
+                if    (defined $arg_ref->{document_id})        { $self->_get_document($arg_ref); }
+                elsif (defined $arg_ref->{document_file_name}) { $self->insert( $arg_ref ); }
+
+                return;
+        }
 	
+	sub get_root_dir              { my ( $self ) = @_; return $self->_get_root_dir(); }
+	
+	sub get_document {
+		my( $self ) = @_;
+		
+		return $doc = do { local( @ARGV, $/ ) = $file ; <> } ;
+	}
+	
+	sub parse_doc {
+		my( $self ) = @_;
+	}
+
+	sub parse_sentence {
+		my( $self ) = @_;
+	}
+
+	sub parse_token {
+		my( $self ) = @_;
+	}
+	
+	sub text_to_file {
+		my( $self ) = @_;
+	}
+
+	sub insert {
+		my( $self ) = @_;
+	}
 }
 
 1; # Magic true value required at end of module
@@ -20,17 +60,17 @@ __END__
 
 =head1 NAME
 
-Text::Mining::Concepts - Perl Tools for Text Mining
+Text::Mining::Parser::Text - Perl Tools for Text Mining
 
 
 =head1 VERSION
 
-This document describes Text::Mining::Concepts version 0.0.5
+This document describes Text::Mining::Parser::Text version 0.0.4
 
 
 =head1 SYNOPSIS
 
-    use Text::Mining::Concepts;
+    use Text::Mining::Parser::Text;
 
     my $wizard = CatalystX::Wizard->new({attribute => 'value'});
 
@@ -94,7 +134,7 @@ This document describes Text::Mining::Concepts version 0.0.5
     that can be set. These descriptions must also include details of any
     configuration language used.
   
-Text::Mining::Concepts requires no configuration files or environment variables.
+Text::Mining::Parser::Text requires no configuration files or environment variables.
 
 
 =head1 DEPENDENCIES
@@ -134,7 +174,7 @@ None reported.
 No bugs have been reported.
 
 Please report any bugs or feature requests to
-C<bug-text-mining-concepts@rt.cpan.org>, or through the web interface at
+C<bug-text-mining-parser-text@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 

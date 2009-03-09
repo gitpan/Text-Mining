@@ -6,8 +6,6 @@ use warnings;
 use Text::Mining;
 use Text::Mining::Corpus;
 
-use version; our $VERSION = qv('0.1.0');
-
 our ( $function, $verbose );
 our $corpus_name = '';
 our $corpus_desc = '';
@@ -23,8 +21,6 @@ get_options();
 
 $features->{ $function }->();
 
-print "\n";
-
 exit;
 
 
@@ -38,17 +34,7 @@ sub create_corpus {
 }
 
 sub update_corpus {
-	status( "update_corpus $corpus_name" );
-	my $params  = { corpus_name => $corpus_name };
-	my $changes = 0;
-	my $corpus  = Text::Mining::Corpus->new( $params );
-	
-	# Update if changes found
-	if ( $corpus_desc ) { $changes++; $params->{corpus_desc} = $corpus_desc; }
-	if ( $corpus_path ) { $changes++; $params->{corpus_path} = $corpus_path; }
-	if ( $changes )     { $corpus->update( $params ); }
-
-	show_corpus( Text::Mining::Corpus->new( $params ) );
+	print "update_corpus $corpus_name \n";
 }
 
 sub delete_corpus {
@@ -127,43 +113,30 @@ sub get_options {
 
 sub usage {
 	print STDERR << "EOF";
-
-usage: corpus [-v] -show [-n corpus_name] 
-       corpus [-v] -create -n corpus_name [-desc corpus_desc] [-path corpus_path]
-       corpus [-v] -update -n corpus_name [-desc corpus_desc] [-path corpus_path]
+usage: corpus [-v] -create -n corpus_name -desc corpus_desc -path corpus_path
+       corpus [-v] -show -n corpus_name 
        corpus [-v] -del -n corpus_name 
-
 EOF
 }
 
 sub help {
 	usage();
 	print STDERR << "EOF";
- -name or -n          : The short name of the corpus
- -create or -c        : Create a new corpus
-                      : Requires -n
-                      : Path and Desc not required
- -show or -s          : Used with -n shows an existing corpus
-                      : Used without shows all corpuses
- -delete or -del      : Delete an existing corpus
-                      : Requires -n
- -update or -u        : Updates an existing corpus
-                      : Requires -n but doesn't change it
-                      : Path and Desc not required
-		      : No update without at least one of above
+
+ -c                   : Create a new corpus
+ -s                   : Show an existing corpus
+ -delete              : Delete an existing corpus
+ -n corpus_name       : The short name of your corpus
  -desc corpus_desc    : Corpus description
  -path corpus_path    : Corpus project file path
- -verbose or -v       : verbose output (when available)
- -help or -h          : this (help) message
+ -v                   : verbose output (when available)
+ -h                   : this (help) message
 
-examples: corpus 
-          corpus -h 
-          corpus -c -n CorpusName -d "My Corpus" -p /my/corpus/path
-          corpus -v -c -n CorpusName -d "My Corpus"
-          corpus -s -n CorpusName
-          corpus -s
-          corpus -del -n CorpusName
-          corpus -u -n CorpusName -p /my/new/path
+example    : corpus -n Dev
+         corpus -c Dev
+         corpus -d Dev
+         corpus -v -n EnglishMedical
+         corpus -h
 
 EOF
     exit;

@@ -9,9 +9,10 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.4');
+use version; our $VERSION = qv('0.0.5');
 
-our $config_filename = '.corpus';
+our $config_filename = '.corpus/config';
+our $status_filename = '.tm-status';
 
 {
 	my %library_dbh_of     : ATTR();
@@ -24,8 +25,9 @@ our $config_filename = '.corpus';
 
 	sub get_root_url         { my ( $self ) = @_; return $root_url_of{ident $self}; }
 	sub get_root_dir         { my ( $self ) = @_; return $root_dir_of{ident $self}; }
-	sub get_data_dir         { my ( $self, $corpus_id ) = @_; return $self->get_root_dir() . "/documents/corpus_"; }
+	sub get_data_dir         { my ( $self, $corpus_id ) = @_; return $self->get_root_dir() . "/documents/corpus_$corpus_id"; }
 	sub get_config_filename  { return File::Spec->catfile( $ENV{HOME}, $config_filename ); }
+	sub get_status_filename  { return File::Spec->catfile( $ENV{HOME}, $status_filename ); }
 
 	sub BUILD {      
 		my ($self, $ident, $arg_ref) = @_;
@@ -39,6 +41,13 @@ our $config_filename = '.corpus';
 		$analysis_dbh_of{$ident}    = DBIx::MySperqlOO->new( $config->{analysis} );
 
 		return;
+	}
+
+	sub get_corpus_id_from_name {
+		my ( $self, $arg_ref ) = @_;
+		my $sql = "select corpus_id from corpuses where corpus_name = '" . $arg_ref->{corpus_name} . "'";
+	   	my ( $corpus_id ) = $self->library()->sqlexec( $sql, '@' );
+	        return $corpus_id;
 	}
 
 	sub _load_config {
@@ -224,7 +233,7 @@ Text::Mining::Base - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Base version 0.0.4
+This document describes Text::Mining::Base version 0.0.5
 
 
 =head1 SYNOPSIS

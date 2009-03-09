@@ -1,4 +1,4 @@
-package Text::Mining::Concepts;
+package Text::Mining::Library;
 use base qw(Text::Mining::Base);
 use Class::Std;
 use Class::Std::Utils;
@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.5');
+use version; our $VERSION = qv('0.0.4');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
@@ -20,17 +20,17 @@ __END__
 
 =head1 NAME
 
-Text::Mining::Concepts - Perl Tools for Text Mining
+Text::Mining::Library - Perl Tools for Text Mining
 
 
 =head1 VERSION
 
-This document describes Text::Mining::Concepts version 0.0.5
+This document describes Text::Mining::Library version 0.0.4
 
 
 =head1 SYNOPSIS
 
-    use Text::Mining::Concepts;
+    use Text::Mining::Library;
 
     my $wizard = CatalystX::Wizard->new({attribute => 'value'});
 
@@ -94,7 +94,7 @@ This document describes Text::Mining::Concepts version 0.0.5
     that can be set. These descriptions must also include details of any
     configuration language used.
   
-Text::Mining::Concepts requires no configuration files or environment variables.
+Text::Mining::Library requires no configuration files or environment variables.
 
 
 =head1 DEPENDENCIES
@@ -134,7 +134,7 @@ None reported.
 No bugs have been reported.
 
 Please report any bugs or feature requests to
-C<bug-text-mining-concepts@rt.cpan.org>, or through the web interface at
+C<bug-text-mining-library@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 

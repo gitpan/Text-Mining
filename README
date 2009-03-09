@@ -1,19 +1,8 @@
-Text-Mining version 0.0.1
+Text-Mining version 0.0.5
 
-[ REPLACE THIS...
-
-  The README is used to introduce the module and provide instructions on
-  how to install the module, any machine dependencies it may have (for
-  example C compilers and installed libraries) and any other information
-  that should be understood before the module is installed.
-
-  A README file is required for CPAN modules since CPAN extracts the
-  README file from a module distribution so that people browsing the
-  archive can use it get an idea of the modules uses. It is usually a
-  good idea to provide version information here so that people can
-  decide whether fixes for the module are worth downloading.
-]
-
+Perl Tools for Text Mining can either be used via a 
+shell with TM specific commands or in your own 
+perl scripts.
 
 INSTALLATION
 
@@ -27,12 +16,27 @@ To install this module, run the following commands:
 
 DEPENDENCIES
 
-None.
+ Test::More
+ version
+ Class::Std
+ Class::Std::Utils
+ YAML
+ Carp
+ LWP::Simple
+ Time::HiRes
+ DBIx::MySperqlOO
+ File::Spec
 
+AUTHORS
 
-COPYRIGHT AND LICENCE
+Feel free to email the authors with questions or concerns. Please be patient for a reply.
 
-Copyright (C) 2009, Roger A Hall
+Roger Hall (roger@iosea.com), (rahall2@ualr.edu) 
+Michael Bauer (mbkodos@gmail.com), (mabauer@ualr.edu) 
+
+COPYRIGHT AND LICENSE
+
+Copyright (C) 2009, the Authors
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

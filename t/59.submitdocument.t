@@ -17,11 +17,14 @@ ok( $document_id, "\$document->get_submitted_document_id()" );
 my $name = $document->get_document_file_name();
 ok( $name, "\$document->get_document_file_name()" );
 
+my $path = $document->get_document_path(), "\n";
+ok( $path, "\$document->get_document_path()" );
+
 my $document = Text::Mining::Corpus::Document->new({ submitted_document_id => $document_id });
 ok( $document, "Text::Mining::Corpus::Document->new()" );
 
-my $path = $document->get_document_path(), "\n";
-ok( $path, "\$document->get_document_path()" );
+#my $path = $document->get_document_path(), "\n";
+#ok( $path, "\$document->get_document_path()" );
 
 #$document->set_document_file_name( 'new_file' );
 #my $new_name = $document->get_document_file_name();

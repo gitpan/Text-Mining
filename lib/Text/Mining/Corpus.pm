@@ -1,13 +1,14 @@
 package Text::Mining::Corpus;
-use base qw(Text::Mining::Base);
+use base qw(Text::Mining::Corpus::Base);
 use Class::Std;
 use Class::Std::Utils;
+use Text::Mining::Corpus::Document;
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.4');
+use version; our $VERSION = qv('0.0.5');
 
 {
 	my %id_of    : ATTR( );
@@ -19,13 +20,25 @@ use version; our $VERSION = qv('0.0.4');
 		my ($self, $ident, $arg_ref) = @_;
 	               
 		if    (defined $arg_ref->{corpus_id})   { $self->_get_corpus($arg_ref); }
-		elsif (defined $arg_ref->{corpus_name}) { $self->insert( $arg_ref ); }
+		elsif (defined $arg_ref->{corpus_name}) { 
+			# Check if already exists 
+			my $corpus_id = $self->get_corpus_id_from_name($arg_ref);
+			if ( $corpus_id ) {
+				$arg_ref->{corpus_id} = $corpus_id;
+				$self->_get_corpus($arg_ref);
+			} else {
+				# Insert new corpus 
+				$self->insert( $arg_ref ); 
+			}
+		}
 
 		return;
 	}
 
-	sub submit_document           { my ( $self, $arg_ref ) = @_; $arg_ref->{corpus_id} = $id_of{ident $self}; return Text::Librarian::SubmitDocument->new( $arg_ref ); }
-	sub delete_submitted_document { my ( $self, $arg_ref ) = @_; return Text::Librarian::SubmitDocument->delete( $arg_ref ); }
+	#sub submit_document           { my ( $self, $arg_ref ) = @_; $arg_ref->{corpus_id} = $id_of{ident $self}; return Text::Librarian::SubmitDocument->new( $arg_ref ); }
+	#sub submit_document           { my ( $self, $arg_ref ) = @_; $arg_ref->{corpus_id} = $id_of{ident $self}; return Text::Mining::Corpus::Document->new( $arg_ref ); }
+	#sub delete_submitted_document { my ( $self, $arg_ref ) = @_; return Text::Librarian::SubmitDocument->delete( $arg_ref ); }
+	sub delete_submitted_document { my ( $self, $arg_ref ) = @_; return Text::Mining::Corpus::Document->delete( $arg_ref ); }
 
 	sub get_id              { my ($self) = @_; return $id_of{ident $self}; }
 	sub get_corpus_id       { my ($self) = @_; return $id_of{ident $self}; }
@@ -37,6 +50,12 @@ use version; our $VERSION = qv('0.0.4');
 	sub set_name            { my ($self, $value) = @_; $name_of{ident $self} = $value; return $self; }
 	sub set_desc            { my ($self, $value) = @_; $desc_of{ident $self} = $value; return $self; }
 	sub set_path            { my ($self, $value) = @_; $path_of{ident $self} = $value; return $self; }
+
+	sub submit_document { 
+		my ( $self, $arg_ref ) = @_; 
+		$arg_ref->{corpus_id} = $id_of{ident $self}; 
+		return Text::Mining::Corpus::Document->new( $arg_ref ); 
+	}
 
 	sub _get_corpus {
 		my ($self, $arg_ref) = @_;
@@ -69,20 +88,28 @@ use version; our $VERSION = qv('0.0.4');
 		my ($self, $arg_ref)  = @_; 
 		my $ident       = ident $self;
 
-		( $name_of{$ident}, 
-	   	  $desc_of{$ident}, 
-	   	  $path_of{$ident} ) = ( $arg_ref->{corpus_name},
-		                         $arg_ref->{corpus_desc},
-		                         $arg_ref->{corpus_path} );
+		# Save the values 
+		$name_of{$ident} = $arg_ref->{corpus_name};
+		$desc_of{$ident} = $arg_ref->{corpus_desc} ? $arg_ref->{corpus_desc} : $arg_ref->{corpus_name};
 
-		foreach ('corpus_name', 'corpus_path', 'corpus_desc') { $arg_ref->{$_} = $self->_html_to_sql( $arg_ref->{$_} || '' ); }
-		
-		my $sql  = "insert into corpuses (corpus_name, corpus_path, corpus_desc) ";
-		   $sql .= "values ( '$arg_ref->{corpus_name}', '$arg_ref->{corpus_path}', '$arg_ref->{corpus_desc}') ";
+		# Insert base values
+		foreach ('corpus_name', 'corpus_desc') { $arg_ref->{$_} = $self->_html_to_sql( $arg_ref->{$_} || '' ); }
+		my $sql  = "insert into corpuses (corpus_name, corpus_desc) ";
+		   $sql .= "values ( '$arg_ref->{corpus_name}', '$arg_ref->{corpus_desc}') ";
 	   	$self->library()->sqlexec( $sql );
 
+		# Get the new corpus_id
 		   $sql  = "select LAST_INSERT_ID()";
 	   	( $id_of{$ident} ) = $self->library()->sqlexec( $sql, '@' );
+
+		# Update the path
+		$path_of{$ident} = $arg_ref->{corpus_path} ? $arg_ref->{corpus_path} : $self->_default_corpus_path();
+		   $sql  = "update corpuses set corpus_path = '" .  $path_of{$ident} . "' ";
+		   $sql .= "where corpus_id = '" . $id_of{$ident} . "'";
+	   	$self->library()->sqlexec( $sql );
+
+		# Make sure the path exists
+		$self->check_path();
 	}
 
 	sub delete {
@@ -279,7 +306,7 @@ Text::Mining::Corpus - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Corpus version 0.0.4
+This document describes Text::Mining::Corpus version 0.0.5
 
 
 =head1 SYNOPSIS

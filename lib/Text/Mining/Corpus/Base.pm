@@ -2,16 +2,53 @@ package Text::Mining::Corpus::Base;
 use base qw(Text::Mining::Base);
 use Class::Std;
 use Class::Std::Utils;
+use Archive::Tar;                     # http://search.cpan.org/~kane/Archive-Tar-1.46/lib/Archive/Tar.pm
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.4');
+use version; our $VERSION = qv('0.0.5');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
-	
+
+	sub _default_corpus_path {
+		my ( $self, $arg_ref )  = @_; 
+		return File::Spec->catfile( $self->get_root_dir(), 
+		                            'corpus_' . $self->get_corpus_id() ); 
+	}
+
+	sub check_path {
+		my ( $self ) = @_;
+		my $path = $self->get_path();
+		if ( (-d $path) && (-w $path) ) {
+			$self->_status( "Path exists: $path." );
+		} else {
+			$self->_status( "Creating path: $path." );
+			mkdir( $path );
+			if ( (-d $path) && (-w $path) ) {
+				$self->_status( "Sucess: $path." );
+			} else {
+				$self->_status( "Failure: $path." );
+			}
+		}
+
+	        return;
+	}
+
+	sub get_archive {
+		my ( $self, $arg_ref ) = @_;
+
+		my $file_name = $arg_ref->{ file_name } ? $arg_ref->{ file_name } : '';
+	        if ( $file_name ) {
+	                my $archive   = Archive::Tar->new();
+	                   $archive->read( $file_name );
+	                return $archive;
+	        } else {
+	                return;
+	        } 
+	}
 	
 }
 
@@ -25,7 +62,7 @@ Text::Mining::Corpus::Base - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Corpus::Base version 0.0.4
+This document describes Text::Mining::Corpus::Base version 0.0.5
 
 
 =head1 SYNOPSIS
