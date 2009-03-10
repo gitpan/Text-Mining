@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.4');
+use version; our $VERSION = qv('0.0.6');
 
 {
 	my %document_path_of          : ATTR( get => 'attribute', set => 'attribute' );
@@ -60,46 +60,33 @@ __END__
 
 =head1 NAME
 
-Text::Mining::Parser::Text - Perl Tools for Text Mining
+Text::Mining::Parser::PubMedCentral - Parse XML documents from PubMed Central
 
 
 =head1 VERSION
 
-This document describes Text::Mining::Parser::Text version 0.0.4
+This document describes Text::Mining::Parser::PubMedCentral version 0.0.6
 
 
 =head1 SYNOPSIS
 
-    use Text::Mining::Parser::Text;
+    use Text::Mining;
+    #use Text::Mining::Parser::PubMedCentral;
 
-    my $wizard = CatalystX::Wizard->new({attribute => 'value'});
+    my $tm = Text::Mining->new();
 
-    print $wizard->get_attribute(), "\n";
+    my $corpus = $tm->get_corpus({ corpus_id => 1 });
+    my $result = $corpus->add_dir({ dir    => '/home/user/data', 
+                                    parser => 'PubMedCentral' });
 
-    $wizard->set_attribute('new value');
-
-    print $wizard->get_attribute(), "\n";
-
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
   
   
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
-
+Parses XML formatted data from PubMed Central into 
+Text::Mining::Corpus::Documents.
 
 =head1 INTERFACE 
-
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
 
 
 =head1 DIAGNOSTICS
@@ -178,14 +165,15 @@ C<bug-text-mining-parser-text@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Roger A Hall  C<< <rogerhall@cpan.org> >>
+Michael Bauer  C<< <mbkodos@gmail.com> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2009, Roger A Hall C<< <rogerhall@cpan.org> >>. All rights reserved.
+Copyright (c) 2009, the Authors. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.

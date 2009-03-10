@@ -6,4 +6,7 @@ Revision history for Text-Mining
 0.0.5  Mon Mar  9 17:30:00 2009
        Added Text::Mining::Shell via Term::Shell
        
+0.0.6  Tue Mar 10 11:30:00 2009
+       Added shell history, cd, pwd, dir
+       
 

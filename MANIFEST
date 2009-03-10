@@ -21,6 +21,7 @@ lib/Text/Mining/Languages/Dictionary.pm
 lib/Text/Mining/Languages/Translator.pm
 lib/Text/Mining/Library.pm
 lib/Text/Mining/Parser/Text.pm
+lib/Text/Mining/Parser/PubMedCentral.pm
 lib/Text/Mining/Parser/Base.pm
 lib/Text/Mining/Parser.pm
 lib/Text/Mining/Representation/Primary.pm

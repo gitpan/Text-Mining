@@ -1,8 +1,7 @@
-Text-Mining version 0.0.5
+Text-Mining version 0.0.6
 
-Perl Tools for Text Mining can either be used via a 
-shell with TM specific commands or in your own 
-perl scripts.
+Perl Tools for Text Mining can either be used via a shell with TM specific 
+commands or in your own perl scripts.
 
 INSTALLATION
 
@@ -13,6 +12,7 @@ To install this module, run the following commands:
 	make test
 	make install
 
+Scripts must be copied somewhere reasonable.
 
 DEPENDENCIES
 

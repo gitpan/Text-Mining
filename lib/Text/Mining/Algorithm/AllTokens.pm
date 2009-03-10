@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.5');
+use version; our $VERSION = qv('0.0.6');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
@@ -25,7 +25,7 @@ Text::Mining::Algorithm::AllTokens - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Algorithm::AllTokens version 0.0.5
+This document describes Text::Mining::Algorithm::AllTokens version 0.0.6
 
 
 =head1 SYNOPSIS
