@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 # Personal choices
 our $config_filename  = '.corpus/shellrc';
@@ -41,6 +41,10 @@ sub init {
 	my $config         = $shell->_load_config();
 	   $tm             = Text::Mining->new();  print STDERR $tm->version(), "\n";
 	   $current_corpus = $tm->get_corpus({ corpus_id => $config->{current_corpus} });
+
+	# Set pwd
+	my $pwd = defined $config->{pwd} ? $config->{pwd} : $ENV{HOME};
+	$shell->_cd( $pwd );
 
 	# Set the command history
 	$shell->{term}->SetHistory( @{ $shell->_load_history() } );
@@ -91,16 +95,12 @@ sub run_cd {
 	my ( $shell, $target_directory ) = @_;
 
 	if ( defined $target_directory ) {
-		# Adjust relative paths
-		if ($target_directory =~ m/^[^\/]/ and -d $target_directory ) { 
-			$target_directory = $ENV{PWD} . '/' . $target_directory;
-		}
+		$target_directory = $shell->_relative_path_check( $target_directory );
 	} else {
 		$target_directory = $ENV{HOME};
 	} 
 
-	chdir $target_directory;
-	chomp( $ENV{PWD} = `pwd` );
+	$shell->_cd( $target_directory );
 }
 
 sub smry_pwd { 'Print working directory' }
@@ -144,7 +144,7 @@ sub run_dir {
 # Text_Mining >
 # Text_Mining >
 
-sub smry_corpus_list { return "Corpus List -  corpus_list [<name>]"; }
+sub smry_corpus_list { return "List all corpuses. Optional filter by Corpus Name."; }
 sub help_corpus_list { 
 	<<END;
 
@@ -174,7 +174,7 @@ sub run_corpus_list {
 	}
 }
 
-sub smry_corpus_show { return "Corpus Show -  corpus_show [<id>|<name>]"; }
+sub smry_corpus_show { return "Show a corpus' details. Requires id or name."; }
 sub help_corpus_show { 
 	<<END;
 
@@ -210,7 +210,7 @@ sub run_corpus_show {
 	}
 }
 
-sub smry_corpus_set { return "Corpus Set -  corpus_set [<id>|<name>]"; }
+sub smry_corpus_set { return "Set current corpus via id or name."; }
 sub help_corpus_set { 
 	<<END;
 
@@ -246,7 +246,7 @@ sub run_corpus_set {
 	}
 }
 
-sub smry_corpus_new { return "Create New Corpus -  corpus_new [<name>]"; }
+sub smry_corpus_new { return "Create a new corpus."; }
 sub help_corpus_new { 
 	<<END;
 
@@ -275,7 +275,7 @@ sub run_corpus_new {
 
 }
 
-sub smry_corpus_delete { return "Delete Corpus -  corpus_delete [<name>]"; }
+sub smry_corpus_delete { return "Delete a corpus by name."; }
 sub help_corpus_delete { 
 	<<END;
 
@@ -297,7 +297,7 @@ sub run_corpus_delete {
 
 }
 
-sub smry_document_add { return "Add Document -  document_add [<name>]"; }
+sub smry_document_add { return "Add a document to the current corpus."; }
 sub help_document_add { 
 	<<END;
 
@@ -327,7 +327,7 @@ sub run_document_add {
 
 }
 
-sub smry_test { return " Template subroutine \n"; }
+sub smry_test { return "Template subroutine \n"; }
 sub help_test { return " Test Help \n"; }
 
 sub run_test { 
@@ -348,6 +348,24 @@ sub run_test {
 # Internals >
 # Internals >
 # Internals >
+
+sub _cd {
+	my ( $shell, $directory ) = @_;
+	chdir $directory;
+	chomp( $ENV{PWD} = `pwd` );
+
+	# Save the current dir
+	$shell->_update_config({ pwd => $ENV{PWD} }); 
+}
+
+sub _relative_path_check {
+	my ( $shell, $filepath ) = @_;
+
+	if ($filepath =~ m/^[^\/]/ and -d $filepath ) { 
+		$filepath = File::Spec->catfile( $ENV{PWD}, $filepath );
+	}
+	return $filepath;
+}
 
 sub _print_corpus_head {
 	print "  Corpus\tName\t\tDesc\t\tPath\n";
@@ -407,7 +425,7 @@ Text::Mining::Shell - Command Line Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Shell version 0.0.6
+This document describes Text::Mining::Shell version 0.0.7
 
 =head1 SYNOPSIS
 
@@ -428,9 +446,161 @@ Commands generally take the form of noun_verb where nouns are library,
 corpus, document, language, word, concept, and representation and 
 verbs are list, new, show, update, and delete.
 
-The system is better documented online. After starting the shell, 
+The system is documented online. After starting the shell, 
 type "help" and hit enter for a list of commands.
 
+=head3 Term::Shell Extensions 
+
+These methods implement new shell features.
+
+=over 
+
+=item * prompt_str 
+
+Controls the prompt string. May be configurable soon.
+
+=item * _load_config           
+
+Loads the YAML config file. The configuration directory is created in $ENV{HOME} by default.
+
+=item * _update_config         
+
+Updates a specific key in the config file. Calls _save_config().
+
+=item * _save_config           
+
+Saves the passed hashref in the config file .corpus/shellrc.
+
+=item * _load_history          
+
+Loads the history from .corpus/shell_history into the term object.
+
+=item * _save_history          
+
+Saves the history, one command per line. Implemented using Term::Shell::postcmd().
+
+=item * _get_config_filename   
+
+Returns the configuration filename. Based on editable scalar at top of module.
+
+=item * _get_history_filename  
+
+Returns the history file filename. Based on editable scalar at top of module.
+
+=item * init 
+
+Initializes command history and current corpus.
+
+=item * fini 
+
+Saves the command history.
+
+=item * postcmd 
+
+Filters actual commands with parameters and updates the history file.
+
+=back
+
+=head3 File System Extensions
+
+The following methods enable a WOrking directory. These methods 
+update the configuration, so you return to your last working 
+directory when you restart.
+
+=over 
+
+=item * smry_cd, help_cd, run_cd 
+
+Change Directory
+
+=item * smry_pwd, help_pwd, run_pwd 
+
+Print Working Directory
+
+=item * smry_dir, help_dir, run_dir 
+
+List Directory Contents
+
+=back
+
+=head3 Text::Mining Features
+
+The following methods implement Term::Shell functions for the 
+specific function in Text::Mining.
+
+=over 
+
+=item * smry_corpus_list, help_corpus_list, run_corpus_list 
+
+List All Corpuses
+
+=item * smry_corpus_show, help_corpus_show, run_corpus_show 
+
+Show a Corpus
+
+=item * smry_corpus_set, help_corpus_set, run_corpus_set 
+
+Set Current Corpus
+
+=item * smry_corpus_new, help_corpus_new, run_corpus_new 
+
+Create a New Corpus
+
+=item * smry_corpus_delete, help_corpus_delete, run_corpus_delete 
+
+Delete a Corpus
+
+=item * smry_document_add, help_document_add, run_document_add 
+
+Add a Document to Current Corpus
+
+=item * smry_test, help_test, run_test 
+
+Template Subroutines
+
+=back
+
+=head3 Internals
+
+The following methods are generally useful by many of the other methods.
+
+=over 
+
+=item * _cd 
+
+Changes the current directory and updates $ENV{PWD};
+
+=item * _relative_path_check 
+
+Inserts $ENV{PWD} into file paths if the do not start with '/'.
+
+=item * _print_corpus_head 
+
+Prints corpus list header.
+
+=item * _print_corpus 
+
+Prints corpus list row.
+
+=item * _get_file_text 
+
+Returns text of file in a scalar.
+
+=item * _set_file_text 
+
+Sets text of file.
+
+=item * _add_file_text 
+
+Adds to the text of file.
+
+=item * _status 
+
+Prints log. Controlled by verbosity setting.
+
+=item * 
+
+=back
 
 =head1 CONFIGURATION AND ENVIRONMENT
 

@@ -8,7 +8,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
@@ -62,7 +62,7 @@ Text::Mining::Corpus::Base - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Corpus::Base version 0.0.6
+This document describes Text::Mining::Corpus::Base version 0.0.7
 
 
 =head1 SYNOPSIS

@@ -41,11 +41,10 @@ lib/Text/Mining/Corpus/Base.pm
 lib/Text/Mining/Concepts.pm
 lib/Text/Mining/Algorithm.pm
 lib/Text/Mining/Shell.pm
+scripts/kodos
 t/00.load.t
 t/50.base.t
 t/51.tmlibrary.t
 t/53.corpus.t
 t/54.document.t
-
-
 t/pod.t

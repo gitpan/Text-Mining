@@ -7,7 +7,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 {
 	my %document_path_of          : ATTR( get => 'attribute', set => 'attribute' );
@@ -65,7 +65,7 @@ Text::Mining::Parser::PubMedCentral - Parse XML documents from PubMed Central
 
 =head1 VERSION
 
-This document describes Text::Mining::Parser::PubMedCentral version 0.0.6
+This document describes Text::Mining::Parser::PubMedCentral version 0.0.7
 
 
 =head1 SYNOPSIS

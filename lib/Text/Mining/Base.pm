@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 our $config_filename = '.corpus/config';
 our $status_filename = '.tm-status';
@@ -233,7 +233,7 @@ Text::Mining::Base - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Base version 0.0.6
+This document describes Text::Mining::Base version 0.0.7
 
 
 =head1 SYNOPSIS

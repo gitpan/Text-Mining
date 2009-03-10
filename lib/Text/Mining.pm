@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.6');
+use version; our $VERSION = qv('0.0.7');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
@@ -117,111 +117,163 @@ Text::Mining - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining version 0.0.6
+This document describes Text::Mining version 0.0.7
 
 
 =head1 SYNOPSIS
 
+To run the shell:
+
     use Text::Mining;
 
-    my $wizard = CatalystX::Wizard->new({attribute => 'value'});
+    my $tm = Text::Mining->new();
+    $tm->shell();
 
-    print $wizard->get_attribute(), "\n";
+To use the objects:
 
-    $wizard->set_attribute('new value');
+    use Text::Mining;
 
-    print $wizard->get_attribute(), "\n";
+    my $tm = Text::Mining->new();
+    my $corpus = $tm->get_corpus({ corpus_name => 'Test' });
+    my $document = $corpus->add_document({ file_path => 'data/file42.txt' });
 
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
-  
   
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
-
+Text::Mining manages multiple corpuses with unlimited documents and annotations 
+and calculates representations of the documents using a variety of algorithms.
 
 =head1 INTERFACE 
 
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
+The command line interface is self-describing via the "help" command. Copy the 
+"kodos" script from package "scripts" directory to someplace in your path. Check 
+the permissions and adjust as necessary. To start the shell, enter "kodos" at 
+the prompt.
 
+=head2 METHODS 
 
-=head1 DIAGNOSTICS
+=item * shell
 
-=for author to fill in:
-    List every single error and warning message that the module can
-    generate (even the ones that will "never happen"), with a full
-    explanation of each problem, one or more likely causes, and any
-    suggested remedies.
+ $tm->shell();
 
-=over
+Uses Term::Shell plus a few enhancements to provide a live 
+environment for developing flexible and repreatable text mining 
+protocols and manage multi-release projects encompassing multiple 
+corpuses.
 
-=item C<< Error message here, perhaps with %s placeholders >>
+=item * version
 
-[Description of error here]
+ print $tm->version(), "\n";
 
-=item C<< Another error message here >>
+Reports the version of Text::Mining.
 
-[Description of error here]
+=item * create_corpus            
 
-[Et cetera, et cetera]
+ print $tm->version(), "\n";
+
+Reports the version of Text::Mining.
+
+=item * get_corpus               
+
+ my $corpus = $tm->get_corpus({ corpus_id = 1 });
+ my $corpus = $tm->get_corpus({ corpus_name = 'Test' });
+
+Retrieves a corpus object from the database.
+
+=item * delete_corpus            
+
+ $corpus->delete();
+
+Deletes a corpus from the database. Deletes all related documents.
+
+=item * get_root_dir             
+
+ print $tm->get_root_dir(), "\n";
+
+Reports the root directory from the configuration file.
+
+=item * get_root_url             
+
+ print $tm->get_root_url(), "\n";
+
+Reports the root URL of the the webserver from the configuration file.
+
+=item * get_data_dir             
+
+ print $tm->get_data_dir(), "\n";
+
+Reports the main data directory from the configuration file.
+
+=item * get_submitted_document   
+
+ print $tm->submitted_document(), "\n";
+
+Reports the 
+
+=item * count_submitted_waiting  
+
+ print $tm->count_submitted_waiting(), "\n";
+
+Reports the number of documents waiting to be included for a 
+given corpus.
+
+=item * count_submitted_complete 
+
+ print $tm->count_submitted_complete(), "\n";
+
+Reports the number of documents ...
+
+=item * get_all_corpuses         
+
+ my $corpuses = $tm->get_all_corpuses();
+
+Returns the corpuses as DBI table.
+
+=item * get_corpus_id            
+
+ print $corpus->get_corpus_id(), "\n";
+
+Reports the corpus_id of the current_corpus
 
 =back
 
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-  
-Text::Mining requires no configuration files or environment variables.
+Text::Mining requires a set of configuration files stored at "~/.corpus": 
 
+=over
+
+=item * shellrc
+
+Currently holds pwd and current_corpus. Loaded when you start the shell. 
+These settings are saved in real time with _updated_config();
+
+=item * shell_history
+
+Holds the last 1,000 commands. Reloaded when you start the shell. Saved 
+in postcmd().
 
 =head1 DEPENDENCIES
 
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
-
-None.
-
+ Test::More
+ version
+ Class::Std
+ Class::Std::Utils
+ YAML
+ Carp
+ LWP::Simple
+ Time::HiRes
+ DBIx::MySperqlOO
+ File::Spec
+ 
 
 =head1 INCOMPATIBILITIES
-
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
 
 None reported.
 
 
 =head1 BUGS AND LIMITATIONS
-
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
 
 No bugs have been reported.
 
@@ -230,14 +282,15 @@ C<bug-text-mining@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Roger A Hall  C<< <rogerhall@cpan.org> >>
+Michael Bauer  C<< <mbkodos@gmail.com> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2009, Roger A Hall C<< <rogerhall@cpan.org> >>. All rights reserved.
+Copyright (c) 2009, the Authors. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.
