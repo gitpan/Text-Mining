@@ -1,6 +1,6 @@
-Text-Mining version 0.0.7
+Text-Mining version 0.0.8
 
-Perl Tools for Text Mining can either be used via a shell with TM specific 
+Perl Tools for Text Mining Research can either be used via a shell with TM specific 
 commands or in your own perl scripts.
 
 INSTALLATION
@@ -26,6 +26,7 @@ DEPENDENCIES
  Time::HiRes
  DBIx::MySperqlOO
  File::Spec
+ Module::Runtime
 
 AUTHORS
 

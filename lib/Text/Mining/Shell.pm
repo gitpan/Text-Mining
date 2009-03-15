@@ -9,7 +9,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 # Personal choices
 our $config_filename  = '.corpus/shellrc';
@@ -309,22 +309,33 @@ END
 
 sub run_document_add { 
 	my ( $shell, $file_name ) = @_;
+	my $document;
 
-#	if (! $current_corpus ) { print "  You must set a current corpus (corpus_set)."; }
+	if (! $current_corpus ) { print "  You must set a current corpus (corpus_set)."; return; }
 	if (! $file_name) { $file_name = $shell->prompt( "  File name: " ); }
 
-	if      (-e $file_name && -d $file_name) { 
-		print "  Dir found.\n"; 
-	} elsif (-e $file_name && -f $file_name) { 
-		print "  File found.\n"; 
-	} else                                   { 
-		print "  File not found.\n"; 
-	}
-	
-#	my $params = { corpus_name => $corpus_name };
-#	my $corpus = Text::Mining::Corpus->new( $params );
-#	   $corpus->delete();
+	if     (-e $file_name && -f $file_name) { 
+		# Should be re-written - very alpha
+		if (-T $file_name ) {
+			# Submit the document details
+			#$document = $shell->_submit_document( $file_name );
+			my $document = $current_corpus->submit_document({ file_name => $file_name, file_type => 'txt' });
 
+			# Parse text file
+			#$document->parse();
+			$tm->parse_document({ document => $document, algorithm => 'AllTokens' });
+		} else {
+			# Parameter should replace this -T test
+			# Can still be (explicitly) defaulted to text
+			print STDERR "  File type not recognized ($file_name).\n";
+		}
+
+		return $document;
+	} elsif (-e $file_name && -d $file_name) { 
+		print "  $file_name is a directory. Please use the add_dir command.\n"; return;
+	} else                                   { 
+		print "  $file_name was not found.\n"; return;
+	}
 }
 
 sub smry_test { return "Template subroutine \n"; }
@@ -361,10 +372,30 @@ sub _cd {
 sub _relative_path_check {
 	my ( $shell, $filepath ) = @_;
 
-	if ($filepath =~ m/^[^\/]/ and -d $filepath ) { 
+	if ($filepath =~ m/^[^\/]/ ) { 
 		$filepath = File::Spec->catfile( $ENV{PWD}, $filepath );
 	}
 	return $filepath;
+}
+
+sub _submit_document {
+	my ( $shell, $file_name ) = @_;
+
+	my $params = {};
+	   $params->{corpus_id}          = $current_corpus->get_corpus_id();
+	   $params->{document_path}      = $shell->_relative_path_check( $file_name );
+	   $params->{document_file_name} = $file_name;
+
+	# Needs to manage additional type differently
+	if (-T $params->{document_path} ) { 
+	   	$params->{file_type} = 'txt';
+		# Display file so user can extract title (text only)
+		$shell->page( $shell->_get_file_text( $params->{document_path} ) ); }
+	   
+	   $params->{document_title}     = $shell->prompt(" Document title: ", "");
+	   $params->{bytes}              = (-s $params->{document_path});
+
+	return $current_corpus->submit_document( $params );
 }
 
 sub _print_corpus_head {
@@ -425,7 +456,7 @@ Text::Mining::Shell - Command Line Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Shell version 0.0.7
+This document describes Text::Mining::Shell version 0.0.8
 
 =head1 SYNOPSIS
 

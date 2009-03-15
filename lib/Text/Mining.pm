@@ -10,7 +10,7 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
@@ -37,6 +37,14 @@ use version; our $VERSION = qv('0.0.7');
 	sub get_submitted_document    { my ( $self, $arg_ref ) = @_; return Text::Mining::Corpus::Document->new( $arg_ref ); }
 	sub count_submitted_waiting   { my ( $self ) = @_; my ( $count ) = $self->library()->sqlexec( "select count(*) from submitted_documents where exit_date = '0000-00-00 00:00:00'", '@' ); return $count; }
 	sub count_submitted_complete  { my ( $self ) = @_; my ( $count ) = $self->library()->sqlexec( "select count(*) from submitted_documents where exit_date != '0000-00-00 00:00:00'", '@' ); return $count; }
+
+	sub parse_document {
+		my ( $self, $arg_ref ) = @_; 
+		my $document  = defined $arg_ref->{document}  ? $arg_ref->{document}  : $self->_status( "No document to parse." );
+		my $algorithm = defined $arg_ref->{algorithm} ? $arg_ref->{algorithm} : $self->_status( "No algorithm defined." );
+
+		return $document; 
+	}
 
 	sub get_all_corpuses          { 
 		my ( $self, @corpuses) = @_; 
@@ -112,12 +120,12 @@ __END__
 
 =head1 NAME
 
-Text::Mining - Perl Tools for Text Mining
+Text::Mining - Perl Tools for Text Mining Research
 
 
 =head1 VERSION
 
-This document describes Text::Mining version 0.0.7
+This document describes Text::Mining version 0.0.8
 
 
 =head1 SYNOPSIS
@@ -136,12 +144,17 @@ To use the objects:
     my $tm = Text::Mining->new();
     my $corpus = $tm->get_corpus({ corpus_name => 'Test' });
     my $document = $corpus->add_document({ file_path => 'data/file42.txt' });
+    my $parser   = Text::Mining::Parser->new({ parser    => 'Text', 
+					       algorithm => 'Base' });
 
   
 =head1 DESCRIPTION
 
 Text::Mining manages multiple corpuses with unlimited documents and annotations 
 and calculates representations of the documents using a variety of algorithms.
+
+The primary design considerations are token provenance in the face of ever-changing 
+protocols of analysis and pipeline automation for corpus recalculations.
 
 =head1 INTERFACE 
 

@@ -7,10 +7,42 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 {
 	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
+
+	sub harvest_tokens {
+		my ( $self, $arg_ref ) = @_;
+		my ( @values, @inserts );
+		if ( defined $arg_ref->{text} ) {
+			my $document_id = $arg_ref->{document_id};
+			my $text        = $arg_ref->{text};
+			my @sentences   = split(/\./, $text);
+			my @list        = split(/\s+/, $text);
+			my $seen        = {};
+
+			# Build insert statements for distinct tokens
+			foreach my $word ( @list ) {
+				if (undef $seen->{$word}) {
+					$seen->{$word}++;
+					push @values, $word;
+
+					if (@values % 100 == 0) {
+						# Build statement
+						#push @inserts, "insert into tokens_temp (document_id, token) values ('" . join("'), ('", @values) . "');";
+						my $sql = "insert into tokens_temp (document_id, token) values ('$document_id', '" . join("'), ('$document_id', '", @values) . "');";
+						$self->library()->sqlexec( $sql );
+						@values = ();
+					}
+				}
+			}
+			my $sql = "insert into tokens_temp (document_id, token) values ('" . join("'), ('", @values) . "');";
+			$self->library()->sqlexec( $sql );
+		} else {
+			return;
+		}
+	}
 	
 	
 }
@@ -25,7 +57,7 @@ Text::Mining::Algorithm::AllTokens - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Algorithm::AllTokens version 0.0.7
+This document describes Text::Mining::Algorithm::AllTokens version 0.0.8
 
 
 =head1 SYNOPSIS

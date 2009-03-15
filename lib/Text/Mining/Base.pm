@@ -4,12 +4,13 @@ use Class::Std::Utils;
 use DBIx::MySperqlOO;
 use File::Spec;
 use YAML qw(DumpFile LoadFile);
+use Module::Runtime qw(use_module);
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 our $config_filename = '.corpus/config';
 our $status_filename = '.tm-status';
@@ -233,7 +234,7 @@ Text::Mining::Base - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Base version 0.0.7
+This document describes Text::Mining::Base version 0.0.8
 
 
 =head1 SYNOPSIS

@@ -2,17 +2,25 @@ package Text::Mining::Parser;
 use base qw(Text::Mining::Base);
 use Class::Std;
 use Class::Std::Utils;
+use Module::Runtime qw(use_module);
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
+
+# Super alpha
+our $parsers = { 1 => 'Text',
+                 2 => 'PubMedCentral' };
 
 {
-	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
-	
-	
+	no warnings 'redefine';
+	sub new {      
+		my ($self, $arg_ref) = @_;
+		return use_module('Text::Mining::Parser::' . $arg_ref->{parser}, 0.0.1)->new( $arg_ref );
+	}
+
 }
 
 1; # Magic true value required at end of module
@@ -20,55 +28,171 @@ __END__
 
 =head1 NAME
 
-Text::Mining::Parser - Perl Tools for Text Mining
+Text::Mining::Parser - Flexible Parsers for Text Mining
 
 
 =head1 VERSION
 
-This document describes Text::Mining::Parser version 0.0.7
+This document describes Text::Mining::Parser version 0.0.8
 
 
 =head1 SYNOPSIS
 
+To parse any document, you must first create a corpus object. 
+(The corpus must have been created previously).
+
+You have the option of creating it directly:
+
+    use Text::Mining::Corpus;
+
+    my $corpus   = Text::Mining::Corpus->new({ corpus_id => 1 });
+
+Or you can create one from the $tm object, which is generally 
+useful to have around in a text mining script.
+
+    use Text::Mining;
+
+    my $tm       = Text::Mining->new();
+    my $corpus   = $tm->get_corpus({ corpus_id => 1 });
+
+Additionally, you must also have a document object to pass to the 
+parser. You can create a new one (by submitting a new document 
+to the corpus) or retrieve a document already in the corpus.
+
+    my $document = $corpus->submit_document({ document_id => 10 });
+    my $document = $corpus->get_document({ document_id => 10 });
+
+The main parser module is a "virtual constructor" and must be told 
+what specific parser and token algorithm to use.
+
     use Text::Mining::Parser;
 
-    my $wizard = CatalystX::Wizard->new({attribute => 'value'});
-
-    print $wizard->get_attribute(), "\n";
-
-    $wizard->set_attribute('new value');
-
-    print $wizard->get_attribute(), "\n";
-
-=for author to fill in:
-    Brief code example(s) here showing commonest usage(s).
-    This section will be as far as many users bother reading
-    so make it as educational and exeplary as possible.
+    my $parser   = Text::Mining::Parser->new({ parser    => 'Text', 
+					       algorithm => 'Base' });
   
-  
+To parse a document, pass it to parse_document().
+
+    $parser->parse_document({ document => $document }), "\n";
+
 =head1 DESCRIPTION
 
-=for author to fill in:
-    Write a full description of the module and its features here.
-    Use subsections (=head2, =head3) as appropriate.
+The functionality of every Text::Mining::Parser is integrated with a 
+specific corpus held between a MySQL database and the local file 
+system. The primary design considerations are flexible usage and full 
+token provenance in the face of ever-changing protocols and algorithms.
 
+This module fronts interchangable parsers and algorithms which are developed by 
+you as a Text::Mining system developer. They can be as generic 
+as you want (like T_M_P::Text) or as specific as makes sense 
+for a corpus import parser (like T_M_P::PubMedCentral). The parsers are 
+responsible for dividing a document into parts: all_text, sections, paragraphs, 
+and lines. The algorithms are designed to deal with each of these parts in turn. 
+This allows us to use the same token handling scheme against both plain text and 
+xml tagged documents.
 
 =head1 INTERFACE 
 
-=for author to fill in:
-    Write a separate section listing the public components of the modules
-    interface. These normally consist of either subroutines that may be
-    exported, or methods that may be called on objects belonging to the
-    classes provided by the module.
+The base module Text::Mining::Parser::Base defines all the methods of the 
+parser, and each specific module overrides the base where desired.
 
+The following is the effective interface of a specific parser. Please note 
+that only the new() method is implemented in Text::Mining::Parser.
+
+=head2 PUBLIC METHODS
+
+These methods are called in scripts and other object's methods.
+
+=over
+
+=item * new()
+
+Creates a parser using specific modules for parsing and token 
+handling.
+
+ my $parser = Text::Mining::Parser->new({ parser    => 'Text', 
+					  algorithm => 'Base' });
+  
+
+=item * parse_document()
+
+Completes a document parse. Depending on the parser, it may 
+create a token list from the full text, mark tokens for 
+proximity by section, paragraph, and line, or whatever you 
+build a parser to do.
+
+  $parser->parse_document({ document => $document });
+
+The method calls each _get_<scope>() parser method and feeds 
+the results to the appropriate algorithm _by_<scope>() method.
+
+The all_text scope is simple:
+
+  my $text = $self->_get_all_text();
+  $algorithm->_by_text({ text => $text });
+
+The algorithm would be expected to do whatever token harvesting 
+is required in the _by_text() method (which is called first).
+
+All other scopes are ordered lists of text, and use a while loop 
+to complete the sequential processing of each.
+
+  my $section = $self->_get_next_section();
+  while (defined $section) { 
+      $algorithm->_by_section({ section => $section }); 
+      $section = $self->_get_next_section(); }
+
+=item * stats()
+
+Report parser and token metrics.
+
+=back
+
+=head2 PRIVATE METHODS
+
+These methods are should not be called outside of the module. They 
+are meant to support the Public Methods. They may be completely changed 
+in any future revision.
+
+=over
+
+=item * _get_all_text()
+
+This method should return the full text of the document.
+
+=item * _get_next_section()
+
+This method should return the next section of the document, 
+starting with the first, and returning null when complete. 
+This method uses an internal index which is set to 1 when 
+the parser is created.
+
+=item * _get_next_paragraph()
+
+This method should return the next paragraph of the document, 
+starting with the first, and returning null when complete. 
+This method uses an internal index which is set to 1 when 
+the parser is created.
+
+=item * _get_next_line()
+
+This method should return the next line of the document, 
+starting with the first, and returning null when complete. 
+This method uses an internal index which is set to 1 when 
+the parser is created.
+
+=item * _annotate()
+
+This method adds an annotation to the token list for the 
+document, noting the type and version of both parser and 
+algorithm.
+
+=item * _update_stats()
+
+Marshalls and persists parser and token metrics.
+
+=back
 
 =head1 DIAGNOSTICS
-
-=for author to fill in:
-    List every single error and warning message that the module can
-    generate (even the ones that will "never happen"), with a full
-    explanation of each problem, one or more likely causes, and any
-    suggested remedies.
 
 =over
 
@@ -87,49 +211,18 @@ This document describes Text::Mining::Parser version 0.0.7
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
-=for author to fill in:
-    A full explanation of any configuration system(s) used by the
-    module, including the names and locations of any configuration
-    files, and the meaning of any environment variables or properties
-    that can be set. These descriptions must also include details of any
-    configuration language used.
-  
 Text::Mining::Parser requires no configuration files or environment variables.
 
 
 =head1 DEPENDENCIES
 
-=for author to fill in:
-    A list of all the other modules that this module relies upon,
-    including any restrictions on versions, and an indication whether
-    the module is part of the standard Perl distribution, part of the
-    module's distribution, or must be installed separately. ]
-
-None.
-
 
 =head1 INCOMPATIBILITIES
-
-=for author to fill in:
-    A list of any modules that this module cannot be used in conjunction
-    with. This may be due to name conflicts in the interface, or
-    competition for system or program resources, or due to internal
-    limitations of Perl (for example, many modules that use source code
-    filters are mutually incompatible).
 
 None reported.
 
 
 =head1 BUGS AND LIMITATIONS
-
-=for author to fill in:
-    A list of known problems with the module, together with some
-    indication Whether they are likely to be fixed in an upcoming
-    release. Also a list of restrictions on the features the module
-    does provide: data types that cannot be handled, performance issues
-    and the circumstances in which they may arise, practical
-    limitations on the size of data sets, special cases that are not
-    (yet) handled, etc.
 
 No bugs have been reported.
 
@@ -138,14 +231,15 @@ C<bug-text-mining-parser@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.
 
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Roger A Hall  C<< <rogerhall@cpan.org> >>
+Michael Bauer  C<< <mbkodos@gmail.com> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2009, Roger A Hall C<< <rogerhall@cpan.org> >>. All rights reserved.
+Copyright (c) 2009, the Authors. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself. See L<perlartistic>.

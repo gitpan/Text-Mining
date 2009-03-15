@@ -7,9 +7,10 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 {
+        sub version { return "Text::Mining::Parser::Text Version $VERSION"; }
 	my %document_path_of          : ATTR( get => 'attribute', set => 'attribute' );
 	my %document_id_of 	      : ATTR( get => 'attribute', set => 'attribute' );
 	my %section_id_of 	      : ATTR( get => 'attribute', set => 'attribute' );
@@ -28,14 +29,17 @@ use version; our $VERSION = qv('0.0.7');
 	
 	sub get_root_dir              { my ( $self ) = @_; return $self->_get_root_dir(); }
 	
-	sub get_document {
-		my( $self ) = @_;
+	sub _get_file_text {
+		my( $self, $arg_ref ) = @_;
 		
-		return $doc = do { local( @ARGV, $/ ) = $file ; <> } ;
+		my $text = do { local( @ARGV, $/ ) = $file ; <> } ;
+		return $text;
 	}
 	
 	sub parse_doc {
-		my( $self ) = @_;
+		my( $self, $arg_ref ) = @_;
+
+		my $text = $self->_get_file_text();
 	}
 
 	sub parse_sentence {
@@ -65,7 +69,7 @@ Text::Mining::Parser::PubMedCentral - Parse XML documents from PubMed Central
 
 =head1 VERSION
 
-This document describes Text::Mining::Parser::PubMedCentral version 0.0.7
+This document describes Text::Mining::Parser::PubMedCentral version 0.0.8
 
 
 =head1 SYNOPSIS

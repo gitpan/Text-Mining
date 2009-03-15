@@ -1,5 +1,5 @@
 package Text::Mining::Parser::Text;
-use base qw(Text::Mining::Base);
+use base qw(Text::Mining::Parser::Base);
 use Class::Std;
 use Class::Std::Utils;
 
@@ -7,12 +7,24 @@ use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 {
-	my %attribute_of : ATTR( get => 'attribute', set => 'attribute' );
-	
-	
+	sub version { return "Text::Mining::Parser::Text Version $VERSION"; }
+
+	sub _get_all_text() {
+		my ($self, $arg_ref) = @_;
+		my $document = $self->get_document();
+		my $text = $self->_get_file_text( $document->get_file_name() );
+		return $text;
+	}
+
+	sub _get_next_line() {
+		my ($self, $arg_ref) = @_;
+		return;
+	}
+
+
 }
 
 1; # Magic true value required at end of module
@@ -25,7 +37,7 @@ Text::Mining::Parser::Text - Perl Tools for Text Mining
 
 =head1 VERSION
 
-This document describes Text::Mining::Parser::Text version 0.0.7
+This document describes Text::Mining::Parser::Text version 0.0.8
 
 
 =head1 SYNOPSIS

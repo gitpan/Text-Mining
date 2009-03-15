@@ -2,57 +2,86 @@ package Text::Mining::Corpus::Document;
 use base qw(Text::Mining::Base);
 use Class::Std;
 use Class::Std::Utils;
+use Text::Mining::Parser;
 
 use warnings;
 use strict;
 use Carp;
 
-use version; our $VERSION = qv('0.0.7');
+use version; our $VERSION = qv('0.0.8');
 
 {
-	my %id_of                    : ATTR( :default<> );
-	my %corpus_id_of             : ATTR( :init_arg<'corpus_id'> :default<> );
-	my %corpus_name_of           : ATTR( :default<> );
-	my %submitted_by_user_id_of  : ATTR( :init_arg<'submitted_by_user_id'> :default<> );
-	my %document_url_of          : ATTR( :init_arg<'document_url'> :default<> );
-	my %document_path_of         : ATTR( :init_arg<'document_path'> :default<> );
-	my %document_file_name_of    : ATTR( :init_arg<'document_file_name'> :default<> );
-	my %bytes_of                 : ATTR( :init_arg<'bytes'> :default<> );
-	my %enter_date_of            : ATTR( :init_arg<'enter_date'> :default<> );
-	my %exit_date_of             : ATTR( :init_arg<'exit_date'> :default<> );
+	my %document_id_of           : ATTR( :set<document_id> :get<document_id> );
+	my %document_type_of         : ATTR( :set<document_type> :get<document_type> :default<> );
+	my %corpus_id_of             : ATTR( :init_arg<corpus_id> :set<corpus_id> :get<corpus_id> :default<> );
+	my %corpus_name_of           : ATTR( :set<corpus_name> :get<corpus_name> :default<> );
+	my %submitted_by_user_id_of  : ATTR( :set<submitted_by_user_id> :get<submitted_by_user_id> :default<> );
+	my %document_title_of        : ATTR( :set<document_title> :get<document_title> :default<> );
+	my %document_url_of          : ATTR( :set<document_url> :get<document_url> :default<> );
+	my %document_path_of         : ATTR( :set<document_path> :get<document_path> :default<> );
+	my %file_name_of             : ATTR( :init_arg<file_name> :set<file_name> :get<file_name> :default<> );
+	my %file_type_of             : ATTR( :init_arg<file_type> :set<file_type> :get<file_type> :default<> );
+	my %bytes_of                 : ATTR( :set<bytes> :get<bytes> :default<> );
+	my %enter_date_of            : ATTR( :set<enter_date> :get<enter_date> :default<> );
+	my %exit_date_of             : ATTR( :set<exit_date> :get<exit_date> :default<> );
 
 	sub BUILD {      
 		my ($self, $ident, $arg_ref) = @_;
-	               
-		if    (defined $arg_ref->{document_id})        { $self->_get_document($arg_ref); }
-		elsif (defined $arg_ref->{document_file_name}) { $self->insert( $arg_ref ); }
 
 		return;
 	}
 
-	sub get_id                    { my ($self)  = @_; return $id_of{ident $self}; }
-	sub get_document_id           { my ($self)  = @_; return $id_of{ident $self}; }
-	sub get_submitted_document_id { my ($self)  = @_; return $id_of{ident $self}; }
-	sub get_corpus_id             { my ($self)  = @_; return $corpus_id_of{ident $self}; }
-	sub get_submitted_by_user_id  { my ($self)  = @_; return $submitted_by_user_id_of{ident $self}; }
-	sub get_document_url          { my ($self)  = @_; return $document_url_of{ident $self}; }
-	sub get_document_path         { my ($self)  = @_; return $document_path_of{ident $self}; }
-	sub get_document_file_name    { my ($self)  = @_; return $document_file_name_of{ident $self}; }
-	sub get_enter_date            { my ($self)  = @_; return $enter_date_of{ident $self}; }
-	sub get_exit_date             { my ($self)  = @_; return $exit_date_of{ident $self}; }
+	sub START {      
+		my ($self, $ident, $arg_ref) = @_;
+	               
+		#print "  FILE TYPE: ", $self->get_file_type(), "\n\n";
+
+		if    (defined $arg_ref->{document_id})        { $self->_get_document($arg_ref); }
+		elsif (defined $arg_ref->{file_name})          { $self->insert( $arg_ref ); }
+
+		return;
+	}
+
+	sub parse {
+		my ( $self, $arg_ref )  = @_; 
+		$arg_ref->{file_type}   = $self->get_document_type();
+		$arg_ref->{file_name}   = $self->get_file_name();
+		$arg_ref->{document_id} = $self->get_document_id();
+
+		my $parser = Text::Mining::Parser->new( $arg_ref );
+		
+		print STDERR $parser->version(), "\n";
+		print STDERR $parser->stats(), "\n";
+		print STDERR $parser->parse(), "\n";
+
+		my $document_id = $self->get_document_id();
+		return $document_id; 
+	}
+
+#	sub get_id                    { my ($self)  = @_; return $id_of{ident $self}; }
+#	sub get_document_id           { my ($self)  = @_; return $id_of{ident $self}; }
+#	sub get_submitted_document_id { my ($self)  = @_; return $id_of{ident $self}; }
+#	sub get_corpus_id             { my ($self)  = @_; return $corpus_id_of{ident $self}; }
+#	sub get_submitted_by_user_id  { my ($self)  = @_; return $submitted_by_user_id_of{ident $self}; }
+#	sub get_document_url          { my ($self)  = @_; return $document_url_of{ident $self}; }
+#	sub get_document_path         { my ($self)  = @_; return $document_path_of{ident $self}; }
+#	sub get_file_name    { my ($self)  = @_; return $file_name_of{ident $self}; }
+#	sub get_enter_date            { my ($self)  = @_; return $enter_date_of{ident $self}; }
+#	sub get_exit_date             { my ($self)  = @_; return $exit_date_of{ident $self}; }
 
 	sub _get_document {
 		my ($self, $arg_ref) = @_;
 		my $ident = ident $self;
 
-		my $sql  = "select document_id, corpus_id, document_path, document_file_name, bytes, enter_date ";
+		my $sql  = "select document_id, document_type_id, corpus_id, document_path, document_file_name, bytes, enter_date ";
 		   $sql .= "from documents ";
 	   	   $sql .= "where document_id = '$arg_ref->{document_id}'";
 
-		($id_of{$ident}, 
+		($document_id_of{$ident}, 
+	   	 $document_type_of{$ident}, 
 	   	 $corpus_id_of{$ident}, 
 	   	 $document_path_of{$ident}, 
-	   	 $document_file_name_of{$ident}, 
+	   	 $file_name_of{$ident}, 
 	   	 $bytes_of{$ident}, 
 	   	 $enter_date_of{$ident}) = $self->library()->sqlexec($sql, '@');
 	}
@@ -87,8 +116,8 @@ use version; our $VERSION = qv('0.0.7');
 			$switch               = $switch[$switch];
 			$class                = $classes[$switch];
 		        $html                .= "	<tr> \n";
-			$html                .= "		<td valign='top'> <a href='javascript:if(confirm(\"Are you sure you want to delete this documentlication and its related roles and resources?\")){document.location.href=\"" . $root_url . "documents/documentlication_delete" . $document->get_id() . "\";}'>[X]</a> </td> \n";
-			$html                .= "		<td valign='top' class='$class'> <a href='" . $root_url . "documents/document_edit" . $document->get_id() . "'> " . $document->get_name() . " </a> </td> \n";
+			$html                .= "		<td valign='top'> <a href='javascript:if(confirm(\"Are you sure you want to delete this documentlication and its related roles and resources?\")){document.location.href=\"" . $root_url . "documents/documentlication_delete" . $document->get_document_id() . "\";}'>[X]</a> </td> \n";
+			$html                .= "		<td valign='top' class='$class'> <a href='" . $root_url . "documents/document_edit" . $document->get_document_id() . "'> " . $document->get_name() . " </a> </td> \n";
 			$html                .= "	        <td valign='top' class='$class'> " . $document->get_desc() . "</td> \n";
 			$html                .= "	        <td valign='top' class='$class'> " . $document->get_path() . "</td> \n";
 			$html                .= "	</tr> \n";
@@ -104,19 +133,24 @@ use version; our $VERSION = qv('0.0.7');
 
 		if ( defined $arg_ref->{corpus_id} )          { $self->set_desc( $arg_ref->{corpus_id} ); push @updates, "corpus_id = '" . $self->_html_to_sql( $arg_ref->{corpus_id} ) . "'"; }
 		if ( defined $arg_ref->{document_path} )      { $self->set_path( $arg_ref->{document_path} ); push @updates, "document_path = '" . $self->_html_to_sql( $arg_ref->{document_path} ) . "'"; }
-		if ( defined $arg_ref->{document_file_name} ) { $self->set_file_name( $arg_ref->{document_file_name} ); push @updates, "document_file_name = '" . $self->_html_to_sql( $arg_ref->{document_file_name} ) . "'"; }
+		if ( defined $arg_ref->{file_name} )          { $self->set_file_name( $arg_ref->{file_name} ); push @updates, "file_name = '" . $self->_html_to_sql( $arg_ref->{file_name} ) . "'"; }
 		if ( defined $arg_ref->{bytes} )              { $self->set_desc( $arg_ref->{bytes} ); push @updates, "bytes = '" . $self->_html_to_sql( $arg_ref->{bytes} ) . "'"; }
 
-		my $sql  = "update documents set " . join( ', ', @updates ) . " where document_id = '$id_of{$ident}'";
+		my $sql  = "update documents set " . join( ', ', @updates ) . " where document_id = '$document_id_of{$ident}'";
 		$self->library()->sqlexec($sql);
 	}
 
 	sub insert {
 		my ($self, $arg_ref)  = @_; 
-		foreach ('document_path', 'document_file_name', 'bytes') { $arg_ref->{$_} = $self->_html_to_sql( $arg_ref->{$_} || '' ); }
+		foreach ('corpus_id', 'document_title', 'document_path', 'file_name', 'bytes') { $arg_ref->{$_} = $self->_html_to_sql( $arg_ref->{$_} || '' ); }
+
+		# Set doc_type_id : alpha - should be live or at least configured
+		my %doc_types = ( txt => 1, xml => 2, pdf => 3 );
+		$arg_ref->{document_type_id} = $doc_types{ $arg_ref->{file_type} };
 	
-		my $sql  = "insert into documents (corpus_id, document_path, document_file_name, bytes) ";
-		   $sql .= "values ('$arg_ref->{corpus_id}',  '$arg_ref->{document_path}', '$arg_ref->{document_file_name}', '$arg_ref->{bytes}') ";
+		my $sql  = "insert into documents (document_type_id, corpus_id, document_title, document_path, document_file_name, bytes) ";
+		   $sql .= "values ('$arg_ref->{document_type_id}', '$arg_ref->{corpus_id}', '$arg_ref->{document_title}', '$arg_ref->{document_path}', '$arg_ref->{file_name}', '$arg_ref->{bytes}') ";
+		#print "\n", $sql, "\n\n";
 		$self->library()->sqlexec($sql);
 
 		   $sql  = "select LAST_INSERT_ID()";
@@ -138,12 +172,12 @@ __END__
 
 =head1 NAME
 
-Text::Mining::Corpus::Document - Perl Tools for Text Mining
+Text::Mining::Corpus::Document - Provenance and Representations for Documents
 
 
 =head1 VERSION
 
-This document describes Text::Mining::Corpus::Document version 0.0.7
+This document describes Text::Mining::Corpus::Document version 0.0.8
 
 
 =head1 SYNOPSIS
